@@ -1,0 +1,6 @@
+[engine]
+active_service = "vagrant"
+
+[engine.service_destinations.vagrant]
+uri = "ssh://vagrant@192.168.10.10/run/podman/podman.sock"
+identity = "/PATH_TO_REPO_CHECKOUT/vagrant/podman/.vagrant/machines/podman/virtualbox/private_key"

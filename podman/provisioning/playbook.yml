@@ -1,0 +1,101 @@
+- hosts: podman
+  gather_facts: yes
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+  tasks:
+    - name: Add an Apt signing key for kubic repo
+      ansible.builtin.apt_key:
+        url: "{{ kubic_repo.key }}"
+        state: present
+
+    - name: Add kubic repo
+      apt_repository:
+        repo: "{{ kubic_repo.deb }}"
+        state: present
+        filename: kubic
+
+    - name: install podman package
+      package:
+        name: podman
+        state: latest
+
+    - name: Create group for podman users
+      group:
+        name: podman
+        system: yes
+
+    - name: Add current user to podman group
+      user:
+        name: "{{ ansible_ssh_user }}"
+        append: yes
+        groups: [ 'podman']
+
+    - name: Create podman socket configuration directory
+      file:
+        path: "/etc/systemd/system/podman.socket.d"
+        state: directory
+
+    - name: Create podman socket configuration
+      copy:
+        dest: /etc/systemd/system/podman.socket.d/override.conf
+        content: |+
+          [Socket]
+          SocketMode=0660
+          SocketUser=root
+          SocketGroup=podman
+      notify:
+        - Reload systemd daemon config
+        - Restart podman.socket
+
+    - name: Override registries.conf
+      block:
+        - name: Override registries.conf | Copy file
+          copy:
+            dest: /etc/containers/registries.conf.d/registries-override.conf
+            src: registries.conf
+          notify:
+            - Restart podman.socket
+          when: override_registries_conf
+        - name: Override registries.conf | Remove file
+          file:
+            path: /etc/containers/registries.conf.d/registries-override.conf
+            state: absent
+          notify:
+            - Restart podman.socket
+          when: not override_registries_conf
+
+    - name: podman tmpfile config
+      copy:
+        dest: /etc/tmpfiles.d/podman.conf
+        content: |+
+          d /run/podman 0770 root podman
+      notify:
+        - Run systemd-tmpfiles
+        - Restart podman.socket
+
+    - name: Enable podman socket
+      systemd:
+        name: podman.socket
+        enabled: yes
+        state: started
+
+  handlers:
+    - name: Restart podman.socket
+      systemd:
+        name: podman.socket
+        state: restarted
+
+    - name: Run systemd-tmpfiles
+      command: systemd-tmpfiles --create
+
+    - name: Reload systemd daemon config
+      systemd:
+        daemon_reload: yes

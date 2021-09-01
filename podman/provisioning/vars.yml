@@ -1,0 +1,7 @@
+---
+# from https://podman.io/getting-started/installation#ubuntu
+kubic_repo:
+  key: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_lsb.release }}/Release.key"
+  deb: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_lsb.release }}/ /"
+
+override_registries_conf: false

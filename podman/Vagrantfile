@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# Inspired from https://github.com/geerlingguy/ansible-vagrant-examples
+
+VAGRANTFILE_API_VERSION = "2"
+MEMORY_MB = 512
+VCPUS = 2
+VM_IP = "192.168.10.10"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu/focal64"
+
+  config.vm.provider :virtualbox do |v|
+    v.name = "podman"
+    v.memory = MEMORY_MB
+    v.cpus = VCPUS
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  config.vm.hostname = "podman.local"
+  config.vm.network :private_network, ip: VM_IP
+
+  # Set the name of the VM. See: http://stackoverflow.com/a/17864388/100134
+  config.vm.define :podman do |podman|
+  end
+
+  # Ansible provisioner.
+  config.vm.provision "ansible" do |ansible|
+    ansible.compatibility_mode = "2.0"
+    ansible.playbook = "provisioning/playbook.yml"
+    # ansible.galaxy_role_file = "requirements.yml"
+    # ansible.galaxy_command = "ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path}"
+    ansible.become = true
+    ansible.verbose = true
+  end
+
+end
