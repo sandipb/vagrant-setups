@@ -36,9 +36,66 @@ containers, similar to `docker ps`. There should be none :/ because you just set
 this up. But the lack of error would let you know that your host to vm podman
 communication is working.
 
+The equivalent of starting up and shutting down Docker desktop will now be
+`vagrant up` and `vagrant halt` in this directory.
+
 ## Provisioning Notes
 
 IP Address, memory and CPU for the VM are set at the top of the `Vagrantfile`.
 Edit them, and then run `vagrant reload` to modify the VM. It would probably
 result in restarting the VM. If you change the address, remember to update it in
 your local `containers.conf`.
+
+## Differences from docker
+
+While you can use `podman` as a drop-in replacement for `docker` this way, the
+only thing you need to watch out for is that published ports will only be
+exposed on the VM IP address.
+
+So if your vagrant vm IP address is `192.168.10.10` and your are running `nginx`
+like this:
+
+```console
+$ podman run -it --rm -p 8888:80 nginx
+Resolving "nginx" using unqualified-search registries (/etc/containers/registries.conf)
+Trying to pull docker.io/library/nginx:latest...
+Getting image source signatures
+...
+```
+
+Then your website will be accessible on `http://192.168.10.10:8888` and not
+`http://localhost:8888` as in docker.
+
+```console
+$ curl -sI 192.168.10.10:8888
+HTTP/1.1 200 OK
+Server: nginx/1.21.1
+Date: Thu, 02 Sep 2021 01:36:55 GMT
+Content-Type: text/html
+Content-Length: 612
+Last-Modified: Tue, 06 Jul 2021 14:59:17 GMT
+Connection: keep-alive
+ETag: "60e46fc5-264"
+Accept-Ranges: bytes
+
+$ curl -sv localhost:8888
+*   Trying ::1...
+* TCP_NODELAY set
+* Connection failed
+* connect to ::1 port 8888 failed: Connection refused
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connection failed
+* connect to 127.0.0.1 port 8888 failed: Connection refused
+* Failed to connect to localhost port 8888: Connection refused
+* Closing connection 0
+```
+
+As mentioned in [the article][this article] I had references in the top of this
+document, you can add an entry is `/etc/hosts` to make it easier to reach ports
+on running containers.
+
+## Further customizations
+
+[The article][this article] describes turning this setup into a Mac app using
+Automator. You should check it out!
