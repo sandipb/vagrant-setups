@@ -15,7 +15,7 @@ it for remote (ssh) access.
 
 On Mac:
 
-- `brew install vagrant`
+- `brew install vagrant` (and [Virtualbox](https://www.virtualbox.org/wiki/Downloads) as the provider)
 - `brew install ansible`
 - `brew install podman`
 
