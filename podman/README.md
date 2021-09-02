@@ -49,8 +49,8 @@ your local `containers.conf`.
 ## Differences from docker
 
 While you can use `podman` as a drop-in replacement for `docker` this way, the
-only thing you need to watch out for is that published ports will only be
-exposed on the VM IP address.
+only thing you need to watch out for is that, using the config in *this*
+Vagrantfile, published ports will only be exposed on the VM IP address.
 
 So if your vagrant vm IP address is `192.168.10.10` and your are running `nginx`
 like this:
@@ -94,6 +94,11 @@ $ curl -sv localhost:8888
 As mentioned in [the article][this article] I had references in the top of this
 document, you can add an entry is `/etc/hosts` to make it easier to reach ports
 on running containers.
+
+> :information_source: You should be able to bypass this problem using [bridged networking][bridge],
+but it is a bit more involved, so I haven't explored it here.
+
+[bridge]: https://www.vagrantup.com/docs/networking/public_network#default-router
 
 ## Further customizations
 
