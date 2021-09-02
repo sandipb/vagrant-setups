@@ -91,8 +91,8 @@ $ curl -sv localhost:8888
 * Closing connection 0
 ```
 
-As mentioned in [the article][this article] I had references in the top of this
-document, you can add an entry is `/etc/hosts` to make it easier to reach ports
+As mentioned in [the article][this article] I had referenced in the top of this
+document, you can add an entry in `/etc/hosts` to make it easier to reach ports
 on running containers.
 
 > :information_source: You should be able to bypass this problem using [bridged networking][bridge],
